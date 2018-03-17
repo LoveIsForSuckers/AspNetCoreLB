@@ -1,0 +1,14 @@
+# Visual Studio 2015/2017 cache/options directory
+.vs/
+
+/AspNetCoreMvc/AspNetCoreSolution/bin
+/AspNetCoreMvc/AspNetCoreSolution/obj
+/AspNetCoreMvc/AspNetCoreSolution/wwwroot
+/AspNetCoreMvc/AspNetCoreSolution/appsettings.Development.json
+/AspNetCoreMvc/AspNetCoreSolution/appsettings.json
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
