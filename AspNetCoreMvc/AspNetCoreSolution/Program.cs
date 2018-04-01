@@ -20,6 +20,15 @@ namespace AspNetCoreSolution
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
+                .ConfigureAppConfiguration((webHostBuilder, configBuilder) =>
+                {
+                    IHostingEnvironment env = webHostBuilder.HostingEnvironment;
+
+                    configBuilder.AddJsonFile("appsettings.json", false, false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true)
+                        .AddJsonFile("App_Config/ConnectionStrings.json", false, true)
+                        .AddJsonFile("App_Config/IdentityOptions.json", false, true);
+                })
                 .Build();
     }
 }

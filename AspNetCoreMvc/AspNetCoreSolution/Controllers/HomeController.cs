@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AspNetCoreSolution.Models;
 using Microsoft.AspNetCore.Mvc;
-using AspNetCoreSolution.Models;
+using System.Diagnostics;
 
 namespace AspNetCoreSolution.Controllers
 {

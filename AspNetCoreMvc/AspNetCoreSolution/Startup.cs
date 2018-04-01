@@ -1,9 +1,12 @@
-﻿using AspNetCoreSolution.Services;
+﻿using AspNetCoreSolution.Models.IdentityModels;
+using AspNetCoreSolution.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Identity.MongoDB;
+using MongoDbGenericRepository;
+using System;
 
 namespace AspNetCoreSolution
 {
@@ -20,7 +23,24 @@ namespace AspNetCoreSolution
         {
             services.AddTransient<IEmailSender, EmailSender>();
 
-            services.AddIdentityWithMongoStores(Configuration.GetConnectionString("DefaultConnection"));
+            var mongoDBContext = new MongoDbContext(Configuration.GetConnectionString("DefaultConnection"), Configuration["DatabaseNames:Default"]);
+
+            var identityBuilder = services.AddIdentity<ApplicationUser, ApplicationRole>();
+            identityBuilder.AddMongoDbStores<ApplicationUser, ApplicationRole, int>(mongoDBContext);
+            identityBuilder.AddDefaultTokenProviders();
+
+            var identityOptions = Configuration.GetSection("IdentityOptions");
+            var passwordOptions = identityOptions.GetSection("PasswordOptions");
+
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Password.RequireDigit = passwordOptions.GetValue("RequireDigit", false);
+                options.Password.RequiredLength = passwordOptions.GetValue("RequiredLength", 0);
+                options.Password.RequiredUniqueChars = passwordOptions.GetValue("RequiredUniqueChars", 0);
+                options.Password.RequireLowercase = passwordOptions.GetValue("RequireLowercase", false);
+                options.Password.RequireNonAlphanumeric = passwordOptions.GetValue("RequireNonAlphanumeric", false);
+                options.Password.RequireUppercase = passwordOptions.GetValue("RequireUppercase", false);
+            });
 
             services.AddMvc();
         }
