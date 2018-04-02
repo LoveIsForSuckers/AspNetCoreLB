@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDbGenericRepository;
-using System;
 
 namespace AspNetCoreSolution
 {
@@ -25,6 +24,13 @@ namespace AspNetCoreSolution
 
             var mongoDBContext = new MongoDbContext(Configuration.GetConnectionString("DefaultConnection"), Configuration["DatabaseNames:Default"]);
 
+            ConfigureIdentity(services, mongoDBContext);
+
+            services.AddMvc();
+        }
+
+        private void ConfigureIdentity(IServiceCollection services, IMongoDbContext mongoDBContext)
+        {
             var identityBuilder = services.AddIdentity<ApplicationUser, ApplicationRole>();
             identityBuilder.AddMongoDbStores<ApplicationUser, ApplicationRole, int>(mongoDBContext);
             identityBuilder.AddDefaultTokenProviders();
@@ -41,10 +47,8 @@ namespace AspNetCoreSolution
                 options.Password.RequireNonAlphanumeric = passwordOptions.GetValue("RequireNonAlphanumeric", false);
                 options.Password.RequireUppercase = passwordOptions.GetValue("RequireUppercase", false);
             });
-
-            services.AddMvc();
         }
-        
+
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
