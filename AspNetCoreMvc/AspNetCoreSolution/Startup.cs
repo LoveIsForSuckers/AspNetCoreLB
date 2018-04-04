@@ -1,4 +1,5 @@
-﻿using AspNetCoreSolution.Models.IdentityModels;
+﻿using AspNetCoreSolution.Models.Api.UserGame;
+using AspNetCoreSolution.Models.IdentityModels;
 using AspNetCoreSolution.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDbGenericRepository;
+using System;
 
 namespace AspNetCoreSolution
 {
@@ -21,12 +23,18 @@ namespace AspNetCoreSolution
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<IEmailSender, EmailSender>();
+            services.AddScoped<IMongoDbContext, MongoDbContext>(CreateMongoContext);
 
-            var mongoDBContext = new MongoDbContext(Configuration.GetConnectionString("DefaultConnection"), Configuration["DatabaseNames:Default"]);
-
+            var mongoDBContext = CreateMongoContext();
             ConfigureIdentity(services, mongoDBContext);
+            ConfigureRepositories(services);
 
             services.AddMvc();
+        }
+
+        private MongoDbContext CreateMongoContext(IServiceProvider arg = null)
+        {
+            return new MongoDbContext(Configuration.GetConnectionString("DefaultConnection"), Configuration["DatabaseNames:Default"]);
         }
 
         private void ConfigureIdentity(IServiceCollection services, IMongoDbContext mongoDBContext)
@@ -47,6 +55,11 @@ namespace AspNetCoreSolution
                 options.Password.RequireNonAlphanumeric = passwordOptions.GetValue("RequireNonAlphanumeric", false);
                 options.Password.RequireUppercase = passwordOptions.GetValue("RequireUppercase", false);
             });
+        }
+
+        private void ConfigureRepositories(IServiceCollection services)
+        {
+            services.AddScoped<IUserGameRepository, UserGameRepository>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

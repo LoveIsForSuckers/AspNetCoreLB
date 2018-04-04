@@ -1,45 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AspNetCoreSolution.Models.Api;
+﻿using AspNetCoreSolution.Models.Api;
+using AspNetCoreSolution.Models.Api.UserGame;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace AspNetCoreSolution.Controllers.Api
 {
     [Route("api/[controller]")]
     public class UserGameController : Controller
     {
-        [HttpGet]
-        public JsonResult Get()
+        private const string MODEL_NAME = "UserGame";
+
+        private IUserGameRepository _repo;
+
+        public UserGameController(IUserGameRepository repo)
         {
-            var dataSet = GetDebugDataset();
-            return Json(new { users = dataSet });
+            _repo = repo;
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> Get()
+        {
+            return Json(SimpleResponse.Content(await _repo.GetUserGames()));
         }
 
         [HttpGet("{id}")]
-        public JsonResult Get(int id)
+        public async Task<JsonResult> Get(int id)
         {
-            var dataSet = GetDebugDataset();
-            var item = dataSet.Find(x => x.Id == id);
-            return Json(item);
-        }
-
-        private List<UserGame> GetDebugDataset()
-        {
-            var dataSet = new List<UserGame>();
-            dataSet.Add(new UserGame() { Id = 1, LevelId = 0, Name = "Petya", currency = new UserCurrency() { Soft = 0, Hard = 0 } });
-            dataSet.Add(new UserGame() { Id = 2, LevelId = 3, Name = "Kendrick", currency = new UserCurrency() { Soft = 250, Hard = 0 } });
-            return dataSet;
+            var userGame = await _repo.GetUserGame(id);
+            return Json(SimpleResponse.Content(userGame));
         }
         
         [HttpPost]
-        public string Post([FromBody]UserGame value)
+        public async Task<JsonResult> Post([FromBody]UserGame value)
         {
-            if (value != null)
-                return "Success";
+            if (value == null)
+                return Json(SimpleResponse.Error("Invalid value"));
+
+            int id = value.Id;
+            var userGame = await _repo.GetUserGame(id);
+
+            if (userGame != null)
+            {
+                var result = await _repo.ReplaceUserGame(id, value);
+                return Json(SimpleResponse.Success());
+            }
             else
-                return "Fail!";
+            {
+                await _repo.AddUserGame(value);
+                return Json(SimpleResponse.Success());
+            }
         }
     }
 }

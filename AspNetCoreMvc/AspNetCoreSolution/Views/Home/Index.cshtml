@@ -2,8 +2,22 @@
     ViewData["Title"] = "Home";
 }
 
+using Microsoft.AspNetCore.Identity
+@using AspNetCoreSolution.Models.IdentityModels
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
 <div>
     <h1>Hello Asp.Net Core!</h1>
 
     <p>Some sample text</p>
+
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <p>Signed in test, id:</p>
+        <p>
+            @UserManager.GetUserId(User)
+        </p>
+    }
 </div>

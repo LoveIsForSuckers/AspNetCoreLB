@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AspNetCoreSolution.Models.Api
+namespace AspNetCoreSolution.Models.Api.UserGame
 {
     public class UserCurrency
     {
