@@ -21,7 +21,8 @@ namespace AspNetCoreSolution
                     configBuilder.AddJsonFile("appsettings.json", false, false)
                         .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true)
                         .AddJsonFile("App_Config/ConnectionStrings.json", false, true)
-                        .AddJsonFile("App_Config/IdentityOptions.json", false, true);
+                        .AddJsonFile("App_Config/IdentityOptions.json", false, true)
+                        .AddJsonFile("App_Config/JwtOptions.json", false, true);
                 })
                 .Build();
     }

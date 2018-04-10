@@ -1,13 +1,17 @@
-﻿using AspNetCoreSolution.Models.Api.UserGame;
+﻿using AspNetCoreSolution.Models.Api;
+using AspNetCoreSolution.Models.Api.UserGame;
 using AspNetCoreSolution.Models.IdentityModels;
 using AspNetCoreSolution.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using MongoDbGenericRepository;
 using System;
+using System.Text;
 
 namespace AspNetCoreSolution
 {
@@ -27,6 +31,7 @@ namespace AspNetCoreSolution
 
             var mongoDBContext = CreateMongoContext();
             ConfigureIdentity(services, mongoDBContext);
+            ConfigureJwt(services);
             ConfigureRepositories(services);
 
             services.AddMvc();
@@ -54,6 +59,44 @@ namespace AspNetCoreSolution
                 options.Password.RequireLowercase = passwordOptions.GetValue("RequireLowercase", false);
                 options.Password.RequireNonAlphanumeric = passwordOptions.GetValue("RequireNonAlphanumeric", false);
                 options.Password.RequireUppercase = passwordOptions.GetValue("RequireUppercase", false);
+            });
+        }
+
+        private void ConfigureJwt(IServiceCollection services)
+        {
+            var jwtOptions = Configuration.GetSection("JwtOptions");
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions["SigningKey"]));
+
+            services.Configure<JwtOptions>(options =>
+            {
+                options.Audience = jwtOptions["Audience"];
+                options.Subject = jwtOptions["Subject"];
+                options.Issuer = jwtOptions["Issuer"];
+                options.SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+            });
+
+            var authBuilder = services.AddAuthentication();
+            authBuilder.AddCookie(options => options.SlidingExpiration = true);
+            authBuilder.AddJwtBearer(options =>
+            {
+                options.ClaimsIssuer = jwtOptions["Issuer"];
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtOptions["Issuer"],
+
+                    ValidateAudience = true,
+                    ValidAudience = jwtOptions["Audience"],
+
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = signingKey,
+
+                    RequireExpirationTime = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
             });
         }
 
