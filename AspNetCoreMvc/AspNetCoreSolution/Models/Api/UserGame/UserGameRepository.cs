@@ -27,9 +27,15 @@ namespace AspNetCoreSolution.Models.Api.UserGame
             return await _context.GetCollection<UserGame, int>().Find(filter).FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<UserGame>> GetUserGames()
+        public async Task<IEnumerable<UserGame>> GetUserGames(int skip = 0, int limit = 50)
         {
-            return await _context.GetCollection<UserGame, int>().Find(x => true).ToListAsync();
+            var collection = _context.GetCollection<UserGame, int>();
+            var query = collection.AsQueryable()
+                    .OrderBy(x => x.Id)
+                    .Skip(skip)
+                    .Take(limit);
+
+            return await query.ToAsyncEnumerable().ToList();
         }
 
         public async Task<DeleteResult> RemoveUserGame(int id)

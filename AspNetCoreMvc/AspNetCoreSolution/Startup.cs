@@ -1,4 +1,5 @@
 ﻿using AspNetCoreSolution.Models.Api;
+using AspNetCoreSolution.Models.Api.Library;
 using AspNetCoreSolution.Models.Api.UserGame;
 using AspNetCoreSolution.Models.IdentityModels;
 using AspNetCoreSolution.Services;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using MongoDbGenericRepository;
 using System;
+using System.Security.Claims;
 using System.Text;
 
 namespace AspNetCoreSolution
@@ -98,11 +100,19 @@ namespace AspNetCoreSolution
                     ClockSkew = TimeSpan.Zero
                 };
             });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(CustomClaimTypes.CanUseApi, policy => policy.RequireClaim(CustomClaimTypes.CanUseApi));
+                options.AddPolicy(CustomClaimTypes.CanGetEveryonesData, policy => policy.RequireClaim(CustomClaimTypes.CanGetEveryonesData));
+                options.AddPolicy(CustomClaimTypes.OwnsUserGame, policy => policy.RequireClaim(CustomClaimTypes.OwnsUserGame));
+            });
         }
 
         private void ConfigureRepositories(IServiceCollection services)
         {
             services.AddScoped<IUserGameRepository, UserGameRepository>();
+            services.AddScoped<ILibraryRepository, LibraryRepository>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

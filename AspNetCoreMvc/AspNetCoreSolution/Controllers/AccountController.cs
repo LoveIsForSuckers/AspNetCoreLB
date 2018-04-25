@@ -1,5 +1,7 @@
-﻿using AspNetCoreSolution.Models.AccountViewModels;
+﻿using AspNetCore.Identity.MongoDbCore.Models;
+using AspNetCoreSolution.Models.AccountViewModels;
 using AspNetCoreSolution.Models.Api;
+using AspNetCoreSolution.Models.Api.UserGame;
 using AspNetCoreSolution.Models.IdentityModels;
 using AspNetCoreSolution.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -10,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -26,19 +29,22 @@ namespace AspNetCoreSolution.Controllers
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
         private readonly IOptions<JwtOptions> _jwtOptions;
+        private readonly IUserGameRepository _userGameRepo;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender,
             ILogger<AccountController> logger,
-            IOptions<JwtOptions> jwtOptions)
+            IOptions<JwtOptions> jwtOptions,
+            IUserGameRepository userGameRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _logger = logger;
             _jwtOptions = jwtOptions;
+            _userGameRepo = userGameRepository;
         }
 
         [TempData]
@@ -225,6 +231,8 @@ namespace AspNetCoreSolution.Controllers
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                user.Claims.Add(new MongoClaim { Type = CustomClaimTypes.CanUseApi, Value = "", Issuer = "AutoRegister" });
+
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
@@ -445,31 +453,59 @@ namespace AspNetCoreSolution.Controllers
         [HttpPost]
         public async Task<IActionResult> Token([FromBody] LoginViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return BadRequest(SimpleResponse.Error("Failed to create token"));
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+                user = await AutoRegister(model);
+            if (user == null)
+                return BadRequest(SimpleResponse.Error("Failed to create token"));
+
+            var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
+            if (!result.Succeeded)
+                return BadRequest(SimpleResponse.Error("Failed to create token"));
+
+            var claims = new List<Claim>();
+            claims.Add(new Claim(JwtRegisteredClaimNames.Sub, user.Email));
+            claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
+            foreach (var mongoClaim in user.Claims)
             {
-                var user = await _userManager.FindByEmailAsync(model.Email);
-                
-                if (user != null)
-                {
-                    var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
-                    if (result.Succeeded)
-                    {
-                        var claims = new[]
-                        {
-                            new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                        };
-
-                        var creds = _jwtOptions.Value.SigningCredentials;
-
-                        var token = new JwtSecurityToken(_jwtOptions.Value.Issuer, _jwtOptions.Value.Audience, claims, expires: DateTime.Now.AddMinutes(240), signingCredentials: creds);
-
-                        return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
-                    }
-                }
+                var claim = new Claim(mongoClaim.Type, mongoClaim.Value, null, mongoClaim.Issuer);
+                claims.Add(claim);
             }
 
-            return BadRequest(SimpleResponse.Error("Failed to create token"));
+            var creds = _jwtOptions.Value.SigningCredentials;
+
+            var token = new JwtSecurityToken(_jwtOptions.Value.Issuer, _jwtOptions.Value.Audience, claims, expires: DateTime.Now.AddMinutes(240), signingCredentials: creds);
+
+            return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
+        }
+
+        private async Task<ApplicationUser> AutoRegister(LoginViewModel model)
+        {
+            var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+            user.Claims.Add(new MongoClaim { Type = CustomClaimTypes.CanUseApi, Value = "", Issuer = "AutoRegister" });
+            user.Claims.Add(new MongoClaim { Type = CustomClaimTypes.OwnsUserGame, Value = user.Id.ToString(), Issuer = "AutoRegister" });
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+
+            if (result.Succeeded)
+            {
+                _logger.LogInformation("User created a new account with password through api AutoRegister.");
+
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var callbackUrl = Url.EmailConfirmationLink(user.Id.ToString(), code, Request.Scheme);
+                await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
+
+                await _userGameRepo.AddUserGame(new UserGame() { Id = user.Id });
+
+                return user;
+            }
+
+            AddErrors(result);
+
+            return null;
         }
 
         #region Helpers

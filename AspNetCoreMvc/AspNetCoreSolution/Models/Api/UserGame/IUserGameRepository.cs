@@ -8,7 +8,7 @@ namespace AspNetCoreSolution.Models.Api.UserGame
 {
     public interface IUserGameRepository
     {
-        Task<IEnumerable<UserGame>> GetUserGames();
+        Task<IEnumerable<UserGame>> GetUserGames(int skip, int limit);
         Task<UserGame> GetUserGame(int id);
         Task AddUserGame(UserGame item);
         Task<DeleteResult> RemoveUserGame(int id);
