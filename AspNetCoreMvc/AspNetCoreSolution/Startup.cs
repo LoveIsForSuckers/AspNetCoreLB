@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -31,12 +32,22 @@ namespace AspNetCoreSolution
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddScoped<IMongoDbContext, MongoDbContext>(CreateMongoContext);
 
+            ConfigureRazor(services);
+
             var mongoDBContext = CreateMongoContext();
             ConfigureIdentity(services, mongoDBContext);
             ConfigureJwt(services);
             ConfigureRepositories(services);
 
             services.AddMvc();
+        }
+
+        private void ConfigureRazor(IServiceCollection services)
+        {
+            services.Configure<RazorViewEngineOptions>(options =>
+            {
+                options.ViewLocationFormats.Add("/Views/Library/{1}/{0}" + RazorViewEngine.ViewExtension);
+            });
         }
 
         private MongoDbContext CreateMongoContext(IServiceProvider arg = null)
@@ -106,6 +117,7 @@ namespace AspNetCoreSolution
                 options.AddPolicy(CustomClaimTypes.CanUseApi, policy => policy.RequireClaim(CustomClaimTypes.CanUseApi));
                 options.AddPolicy(CustomClaimTypes.CanGetEveryonesData, policy => policy.RequireClaim(CustomClaimTypes.CanGetEveryonesData));
                 options.AddPolicy(CustomClaimTypes.OwnsUserGame, policy => policy.RequireClaim(CustomClaimTypes.OwnsUserGame));
+                options.AddPolicy(CustomClaimTypes.CanEditLibrary, policy => policy.RequireClaim(CustomClaimTypes.CanEditLibrary));
             });
         }
 

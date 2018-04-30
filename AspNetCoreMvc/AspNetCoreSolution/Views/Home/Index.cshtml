@@ -3,20 +3,21 @@
 }
 
 @using AspNetCoreSolution.Models.IdentityModels
+@using AspNetCoreSolution.Models.Api
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
 <div>
-    <h1>Hello Asp.Net Core!</h1>
-
-    <p>Some sample text</p>
-
     @if (SignInManager.IsSignedIn(User))
     {
-        <p>Signed in test, id:</p>
-        <p>
-            @UserManager.GetUserId(User)
-        </p>
+        var userData = await UserManager.GetUserAsync(User);
+
+        <h3>Signed in as: @userData.UserName</h3>
+        
+        if (User.HasClaim(x => x.Type == CustomClaimTypes.CanEditLibrary))
+        {
+            @Html.ActionLink("Weapon", "Index", "Weapon");
+        }
     }
 </div>

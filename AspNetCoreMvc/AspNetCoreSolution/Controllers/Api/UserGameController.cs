@@ -14,8 +14,6 @@ namespace AspNetCoreSolution.Controllers.Api
     [Route("api/[controller]")]
     public class UserGameController : Controller
     {
-        private const string MODEL_NAME = "UserGame";
-
         private IUserGameRepository _repo;
 
         public UserGameController(IUserGameRepository repo)

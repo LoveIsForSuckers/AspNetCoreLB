@@ -34,7 +34,67 @@ namespace AspNetCoreSolution.Models.Api.Library
             await Task.WhenAll(tasks);
 
             var viewModel = new LibraryViewModel() { starships = starshipsTask.Result, weapons = weaponsTask.Result, upgrades = upgradesTask.Result };
+            viewModel.ResolveVersion();
+            viewModel.version += await GetDeletedItemsVersionCount();
+
             return viewModel;
+        }
+
+
+        // COUNTERS
+
+        public async Task<int> GetNextWeaponId()
+        {
+            return await GetAndSaveIncrementedId("weapons");
+        }
+
+        public async Task<int> GetNextUpgradeId()
+        {
+            return await GetAndSaveIncrementedId("upgrades");
+        }
+
+        public async Task<int> GetNextStarshipId()
+        {
+            return await GetAndSaveIncrementedId("starships");
+        }
+
+        public async Task<int> GetAndSaveIncrementedId(string collectionId)
+        {
+            var counters = _context.GetCollection<Counter, String>();
+            var filter = Builders<Counter>.Filter.Eq("Id", collectionId);
+
+            var findResult = await counters.FindAsync(filter);
+            var result = await findResult.FirstOrDefaultAsync();
+
+            result.Count++;
+            result.Version++;
+            await counters.ReplaceOneAsync(filter, result);
+
+            return result.Count;
+        }
+
+        public async Task IncreaseDeletedItemsVersionCount(int delta)
+        {
+            var counters = _context.GetCollection<Counter, String>();
+            var filter = Builders<Counter>.Filter.Eq("Id", "deleted");
+
+            var findResult = await counters.FindAsync(filter);
+            var result = await findResult.FirstOrDefaultAsync();
+
+            result.Count += delta;
+            result.Version++;
+            await counters.ReplaceOneAsync(filter, result);
+        }
+
+        public async Task<int> GetDeletedItemsVersionCount()
+        {
+            var counters = _context.GetCollection<Counter, String>();
+            var filter = Builders<Counter>.Filter.Eq("Id", "deleted");
+
+            var findResult = await counters.FindAsync(filter);
+            var result = await findResult.FirstOrDefaultAsync();
+
+            return result.Count;
         }
 
 

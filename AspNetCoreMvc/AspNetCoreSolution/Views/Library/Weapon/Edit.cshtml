@@ -1,0 +1,101 @@
+﻿@using AspNetCoreSolution.Models.Api.Library
+@model Weapon
+
+@{
+    ViewBag.Title = "Edit";
+}
+
+<h2>Edit weapon</h2>
+
+<form method="post" asp-controller="Weapon" asp-action="Edit">
+    <div class="form-group">
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+
+        @Html.HiddenFor(m => m.Id)
+        @Html.HiddenFor(m => m.Version)
+
+        <h4>Title</h4>
+        <br />
+        <div class="container">
+            @Html.EditorFor(m => m.Title)
+            @Html.ValidationMessageFor(m => m.Title)
+        </div>
+
+        <h4>Attack</h4>
+        <br />
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-4 col-md-2">
+                    @Html.LabelFor(m => m.BaseAttack, "Base")
+                    <br />
+                    @Html.EditorFor(m => m.BaseAttack)
+                    @Html.ValidationMessageFor(m => m.BaseAttack)
+                </div>
+                <div class="col-xs-4 col-md-2">
+                    @Html.LabelFor(m => m.AttackDelta, "Delta")
+                    <br />
+                    @Html.EditorFor(m => m.AttackDelta)
+                    @Html.ValidationMessageFor(m => m.AttackDelta)
+                </div>
+                <div class="col-xs-4 col-md-2">
+                    @Html.LabelFor(m => m.AttackSpeed, "Speed")
+                    <br />
+                    @Html.EditorFor(m => m.AttackSpeed)
+                    @Html.ValidationMessageFor(m => m.AttackSpeed)
+                </div>
+            </div>
+        </div>
+
+        <h4>Images</h4>
+        <br />
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-4 col-md-2">
+                    @Html.LabelFor(m => m.Preview, "Preview")
+                    <br />
+                    @Html.EditorFor(m => m.Preview)
+                    @Html.ValidationMessageFor(m => m.Preview)
+                </div>
+                <div class="col-xs-4 col-md-2">
+                    @Html.LabelFor(m => m.GameImage, "Game image")
+                    <br />
+                    @Html.EditorFor(m => m.GameImage)
+                    @Html.ValidationMessageFor(m => m.GameImage)
+                </div>
+                <div class="col-xs-4 col-md-2">
+                    @Html.LabelFor(m => m.ShotImage, "Shot image")
+                    <br />
+                    @Html.EditorFor(m => m.ShotImage)
+                    @Html.ValidationMessageFor(m => m.ShotImage)
+                </div>
+            </div>
+        </div>
+
+        <h4>Price</h4>
+        <br />
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-4 col-md-2">
+                    @Html.LabelFor(m => m.Price.Soft, "Soft")
+                    <br />
+                    @Html.EditorFor(m => m.Price.Soft)
+                    @Html.ValidationMessageFor(m => m.Price.Soft)
+                </div>
+                <div class="col-xs-4 col-md-2">
+                    @Html.LabelFor(m => m.Price.Hard, "Hard")
+                    <br />
+                    @Html.EditorFor(m => m.Price.Hard)
+                    @Html.ValidationMessageFor(m => m.Price.Hard)
+                </div>
+            </div>
+        </div>
+
+        <br />
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
