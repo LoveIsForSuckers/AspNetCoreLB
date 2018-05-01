@@ -1,0 +1,21 @@
+﻿@using AspNetCoreSolution.Models.Api.CommonData
+@model Currency
+
+<div class="row">
+    <div class="col-xs-4 col-md-2">
+        @Html.LabelFor(m => m.Soft, "Soft")
+        <br />
+        @Html.EditorFor(m => m.Soft)
+        @Html.ValidationMessageFor(m => m.Soft)
+    </div>
+    <div class="col-xs-4 col-md-2">
+        @Html.LabelFor(m => m.Hard, "Hard")
+        <br />
+        @Html.EditorFor(m => m.Hard)
+        @Html.ValidationMessageFor(m => m.Hard)
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

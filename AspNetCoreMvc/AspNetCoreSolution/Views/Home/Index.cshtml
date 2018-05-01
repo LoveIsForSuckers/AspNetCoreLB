@@ -18,6 +18,7 @@
         if (User.HasClaim(x => x.Type == CustomClaimTypes.CanEditLibrary))
         {
             @Html.ActionLink("Weapon", "Index", "Weapon");
+            @Html.ActionLink("Upgrade", "Index", "Upgrade");
         }
     }
 </div>

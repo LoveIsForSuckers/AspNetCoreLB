@@ -2,8 +2,8 @@
 {
     public class StarshipStats
     {
-        public int health;
-        public int energy;
-        public int speed;
+        public int Health { get; set; }
+        public int Energy { get; set; }
+        public int Speed { get; set; }
     }
 }

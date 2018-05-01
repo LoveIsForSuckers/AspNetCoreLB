@@ -1,0 +1,23 @@
+﻿@using AspNetCoreSolution.Models.Api.Library
+@model StarshipStats
+
+<div class="row">
+    <div class="col-xs-4 col-md-2">
+        @Html.LabelFor(m => m.Health, "Health")
+        <br />
+        @Html.EditorFor(m => m.Health)
+        @Html.ValidationMessageFor(m => m.Health)
+    </div>
+    <div class="col-xs-4 col-md-2">
+        @Html.LabelFor(m => m.Energy, "Energy")
+        <br />
+        @Html.EditorFor(m => m.Energy)
+        @Html.ValidationMessageFor(m => m.Energy)
+    </div>
+    <div class="col-xs-4 col-md-2">
+        @Html.LabelFor(m => m.Speed, "Speed")
+        <br />
+        @Html.EditorFor(m => m.Speed)
+        @Html.ValidationMessageFor(m => m.Speed)
+    </div>
+</div>

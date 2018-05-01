@@ -1,0 +1,19 @@
+﻿@using AspNetCoreSolution.Extensions
+@model AspNetCoreSolution.Models.Api.Library.UpgradeLevel
+
+<div class="container">
+    <div class="row">
+        <h4>Price</h4>
+        <br />
+        @Html.PartialFor(m => m.Price, "_Currency")
+    </div>
+    <div class="row">
+        <h4>Stats</h4>
+        <br />
+        @Html.PartialFor(m => m.Stats, "_StarshipStats")
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

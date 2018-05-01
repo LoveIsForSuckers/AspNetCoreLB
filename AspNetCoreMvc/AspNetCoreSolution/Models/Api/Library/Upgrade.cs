@@ -5,15 +5,15 @@ namespace AspNetCoreSolution.Models.Api.Library
 {
     public class Upgrade : BaseModel
     {
-        public string title;
-        public string preview;
+        public string Title { get; set; }
+        public string Preview { get; set; }
 
-        public IEnumerable<UpgradeLevel> levels;
+        public IList<UpgradeLevel> Levels { get; set; }
     }
 
     public class UpgradeLevel
     {
-        public StarshipStats stats;
-        public Currency price;
+        public StarshipStats Stats { get; set; } = new StarshipStats();
+        public Currency Price { get; set; } = new Currency();
     }
 }

@@ -1,25 +1,22 @@
 ﻿@using AspNetCoreSolution.Models.Api.Library
-@model IEnumerable<Weapon>
+@model IEnumerable<Upgrade>
 
 @{ 
-    ViewBag.Title = "Weapon";
+    ViewBag.Title = "Upgrade";
 }
 
-<h2>Weapons</h2>
+<h3>Upgrades</h3>
 
 <div class="weaponList">
     <br />
     @Html.ActionLink("Create new...", "Create")
     <br /><br />
-    @foreach (Weapon item in Model)
+    @foreach (Upgrade item in Model)
     {
           <div>
               <div style="float:left; width:auto;">@item.Id |</div>
               <div style="float:left; width:auto;">
                   | @item.Title |
-              </div>
-              <div style="float:left; width:auto;">
-                  | A: @item.BaseAttack+/-@item.AttackDelta | APS: @item.AttackSpeed
               </div>
               <div style="float: right; width: auto;">
                   @Html.ActionLink("Edit", "Edit", new { Id = item.Id }) |
