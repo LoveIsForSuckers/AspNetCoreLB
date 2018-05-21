@@ -1,5 +1,6 @@
 ﻿using AspNetCoreSolution.Models.Api.CommonData;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace AspNetCoreSolution.Models.Api.Library
 {
@@ -8,7 +9,9 @@ namespace AspNetCoreSolution.Models.Api.Library
         public string Title { get; set; }
         public string Preview { get; set; }
 
-        public IList<UpgradeLevel> Levels { get; set; }
+        [Required]
+        [MinLength(1)]
+        public IList<UpgradeLevel> Levels { get; set; } = new List<UpgradeLevel>();
     }
 
     public class UpgradeLevel

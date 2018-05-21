@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+﻿using AspNetCoreSolution.Extensions;
 using AspNetCoreSolution.Models.Api;
 using AspNetCoreSolution.Models.Api.Library;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace AspNetCoreSolution.Controllers.Library
 {
@@ -41,18 +36,17 @@ namespace AspNetCoreSolution.Controllers.Library
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([FromForm]Upgrade newUpgrade)
         {
-            return Json(newUpgrade);
-            //if (ModelState.IsValid)
-            //{
-            //    newUpgrade.Id = await _repo.GetNextUpgradeId();
+            if (ModelState.IsValid)
+            {
+                newUpgrade.Id = await _repo.GetNextUpgradeId();
 
-            //    await _repo.AddUpgrade(newUpgrade);
-            //    return RedirectToAction("Index");
-            //}
-            //else
-            //{
-            //    return View(newUpgrade);
-            //}
+                await _repo.AddUpgrade(newUpgrade);
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                return View(newUpgrade);
+            }
         }
 
         [HttpGet]
@@ -107,12 +101,19 @@ namespace AspNetCoreSolution.Controllers.Library
             return RedirectToAction("Index");
         }
 
-        //[ResponseCache(NoStore = true, Duration = 0, VaryByHeader = "*")]
-        //public IActionResult GetNewUpgradeLevel()
-        //{
-        //    var model = new UpgradeLevel();
-        //    return PartialView("UpgradeLevel", model);
-        //}
+        [AllowAnonymous]
+        [ResponseCache(NoStore = true, Duration = 0, VaryByHeader = "*")]
+        public PartialViewResult NewUpgradeLevel(int index)
+        {
+            var upgrade = new Upgrade();
+
+            var partial = PartialView("UpgradeLevel", new UpgradeLevel());
+            var htmlPrefix = HtmlHelperExtensions.GetItemHtmlPrefix<Upgrade, UpgradeLevel>(null, m => m.Levels[index]);
+
+            partial.ViewData.TemplateInfo.HtmlFieldPrefix = htmlPrefix;
+
+            return partial as PartialViewResult;
+        }
 
         protected override void Dispose(bool disposing)
         {

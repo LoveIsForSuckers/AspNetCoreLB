@@ -35,7 +35,10 @@
 
         <h3>Upgrade levels</h3>
         <br />
-        <div class="container">
+        <button type="button" class="add" id="add" onclick="RequestNewUpgradeLevel()">+</button>
+        <button type="button" class="remove" id="remove" onclick="RemoveUpgradeLevel()">-</button>
+        @Html.ValidationMessageFor(m => m.Levels)
+        <div class="container" id="itemParent">
             @for (int i = 0; i < Model.Levels.Count(); i++)
             {
                 @Html.PartialFor(m => m.Levels[i], "UpgradeLevel", true)
@@ -50,4 +53,38 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        var baseModelObj = @Html.Raw(Json.Serialize(Model));
+        var index;
+
+        function RequestNewUpgradeLevel() {
+            if (index == 0 || index == undefined)
+                index = baseModelObj.levels.length;
+
+            $.ajax({
+                type: "GET",
+                url: "NewUpgradeLevel",
+                data: { index: index },
+                error: function (e) { alert("error:" + e) },
+                success: function (partialViewData) {
+                    var container = $("#itemParent");
+                    container.append(partialViewData);
+                    index++;
+                }
+            });
+        }
+
+        function RemoveUpgradeLevel() {
+            if (index == 0 || index == undefined)
+                index = baseModelObj.levels.length;
+
+            if (index > 0) {
+                index--;
+                var container = $("#itemParent");
+                var contChildren = container.children($(".upgradeLevel"))
+                contChildren.last().remove();
+            }
+        }
+    </script>
 }
